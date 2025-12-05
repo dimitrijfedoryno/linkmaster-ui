@@ -9,10 +9,13 @@ import { getApiUrl } from "@/config";
 import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
 
+type Platform = "youtube" | "spotify" | "tiktok" | "instagram" | null;
+
 const Index = () => {
   const [url, setUrl] = useState("");
   const [format, setFormat] = useState<"video" | "audio">("audio");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [platform, setPlatform] = useState<Platform>(null);
   
   const API_URL = getApiUrl();
   const { downloads, history } = useSocket(API_URL);
@@ -50,6 +53,13 @@ const Index = () => {
     }
   };
 
+  const handlePlatformDetect = (detectedPlatform: Platform) => {
+    setPlatform(detectedPlatform);
+    if (detectedPlatform === "spotify") {
+      setFormat("audio");
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center p-4 sm:p-8 transition-all duration-500">
       <div className="w-full max-w-3xl space-y-8 animate-fade-up">
@@ -57,16 +67,20 @@ const Index = () => {
         <Header />
 
         {/* Main Box */}
-        <div className="glass p-6 sm:p-8 rounded-2xl border border-glass-border shadow-2xl shadow-black/50">
+        <div className="glass p-4 sm:p-8 rounded-2xl border border-glass-border shadow-2xl shadow-black/50">
           <div className="flex flex-col gap-6">
-            <div className="flex justify-end">
-              <FormatSelector value={format} onChange={setFormat} />
+            <div className="flex justify-center sm:justify-end">
+              <FormatSelector
+                value={format}
+                onChange={setFormat}
+                videoDisabled={platform === "spotify"}
+              />
             </div>
             
             <DownloadInput
               value={url}
               onChange={setUrl}
-              onPlatformDetect={() => {}}
+              onPlatformDetect={handlePlatformDetect}
               onDownloadClick={handleDownload}
               isLoading={isAnalyzing}
             />

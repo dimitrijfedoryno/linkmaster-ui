@@ -49,24 +49,26 @@ const DownloadInput = ({ value, onChange, onPlatformDetect, onDownloadClick, isL
 
   return (
     <div className="relative w-full">
-      <div className="flex items-center gap-3">
-        {platform && (
-          <PlatformLogo platform={platform} className="w-8 h-8 flex-shrink-0" />
-        )}
-        <Input
-          type="url"
-          placeholder="Vložte odkaz (YouTube, Spotify, TikTok, Instagram)..."
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className={cn(
-            "flex-1 h-14 px-6 text-base glass glass-hover",
-            platform && `border-${platform}` 
+      <div className="flex flex-col sm:flex-row items-center gap-3">
+        <div className="flex flex-1 w-full items-center gap-3">
+          {platform && (
+            <PlatformLogo platform={platform} className="w-8 h-8 flex-shrink-0" />
           )}
-        />
+          <Input
+            type="url"
+            placeholder="Vložte odkaz (YouTube, Spotify, TikTok, Instagram)..."
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className={cn(
+              "flex-1 h-14 px-6 text-base glass glass-hover",
+              platform && `border-${platform}`
+            )}
+          />
+        </div>
         <Button
           onClick={onDownloadClick}
           disabled={!platform || isLoading || value.trim() === ""}
-          className="h-14 px-8 text-base font-bold transition-all duration-300 transform hover:scale-[1.02]"
+          className="w-full sm:w-auto h-14 px-8 text-base font-bold transition-all duration-300 transform hover:scale-[1.02]"
         >
           {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Stáhnout"}
         </Button>
