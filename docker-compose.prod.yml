@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  backend:
+    container_name: media-downloader-backend
+    build:
+      context: . # Cesta k rootu projektu, kde je server/Dockerfile (upraveno níže)
+      dockerfile: server/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "5000:5000" # Zpřístupnění backendu pro frontend (prohlížeč uživatele)
+    environment:
+      - PORT=5000
+      - DOWNLOAD_PATH_VIDEO=/storage/video
+      - DOWNLOAD_PATH_AUDIO=/storage/audio
+      # Vaše klíče (doplnit)
+      - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID}
+      - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET}
+    volumes:
+      # Mapování složek (Host : Kontejner)
+      - /srv/dev-disk-by-uuid-1cfc3f1a-e64c-4b80-8151-d8f58a25e10f/Surikata/Multimedia/Videa:/storage/video
+      - /srv/dev-disk-by-uuid-1cfc3f1a-e64c-4b80-8151-d8f58a25e10f/Surikata/Multimedia/Hudba:/storage/audio
+      # Config pro případné logy nebo persistentní data
+      - ./server/config:/app/config
+
+  frontend:
+    container_name: media-downloader-frontend
+    build:
+      context: . # Root projektu, kde je Dockerfile (pro frontend)
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8090:80"
+    depends_on:
+      - backend

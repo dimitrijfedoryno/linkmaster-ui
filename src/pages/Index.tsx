@@ -5,6 +5,7 @@ import RecentHistory from "@/components/RecentHistory";
 import FormatSelector from "@/components/FormatSelector";
 import { Header, Footer } from "@/components/layout/PageLayout";
 import { useSocket } from "@/hooks/useSocket";
+import { getApiUrl } from "@/config";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -13,7 +14,8 @@ const Index = () => {
   const [format, setFormat] = useState<"video" | "audio">("audio");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
-  const { downloads, history } = useSocket("http://localhost:5000");
+  const API_URL = getApiUrl();
+  const { downloads, history } = useSocket(API_URL);
 
   const handleDownload = async () => {
     if (!url) {
@@ -24,11 +26,11 @@ const Index = () => {
     setIsAnalyzing(true);
     try {
       // Metadata check
-      const metaRes = await axios.post("http://localhost:5000/api/metadata", { url });
+      const metaRes = await axios.post(`${API_URL}/api/metadata`, { url });
       const metadata = metaRes.data;
 
       // Start download
-      await axios.post("http://localhost:5000/api/download", {
+      await axios.post(`${API_URL}/api/download`, {
         url,
         format,
         tracks: metadata.tracks,
