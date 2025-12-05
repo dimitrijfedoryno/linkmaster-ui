@@ -2,10 +2,18 @@ import express from 'express';
 import { parseSpotifyUrl, getSpotifyPlaylistDetails, getSpotifyPlaylistTracks, getSpotifyTrack } from './services/spotifyService.js';
 import { getYtDlpMetadata } from './services/youtubeService.js';
 import { createDownload, getActiveDownloads, getDownloadHistory } from './services/downloadManager.js';
+import { DOWNLOAD_PATH_VIDEO, DOWNLOAD_PATH_AUDIO } from './config/env.js';
 
 const router = express.Router();
 
 export const setupRoutes = (app, io) => {
+    app.get('/api/config', (req, res) => {
+        res.json({
+            videoPath: DOWNLOAD_PATH_VIDEO,
+            audioPath: DOWNLOAD_PATH_AUDIO
+        });
+    });
+
     app.post('/api/metadata', async (req, res) => {
         try {
             const { url } = req.body;
