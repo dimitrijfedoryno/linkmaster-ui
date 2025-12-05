@@ -6,7 +6,7 @@ import FormatSelector from "@/components/FormatSelector";
 import { Header, Footer } from "@/components/layout/PageLayout";
 import { useSocket } from "@/hooks/useSocket";
 import { getApiUrl } from "@/config";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
 
 const Index = () => {
@@ -40,9 +40,10 @@ const Index = () => {
       toast.success("Stahování zahájeno", { description: `Přidáno do fronty: ${metadata.title}` });
       setUrl(""); // Vyčistit input
       
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
       toast.error("Chyba", {
-        description: error.response?.data?.message || "Něco se pokazilo.",
+        description: err.response?.data?.message || "Něco se pokazilo.",
       });
     } finally {
       setIsAnalyzing(false);
@@ -75,7 +76,7 @@ const Index = () => {
                {downloads.map((dl) => (
                  <div key={dl.id} className="border-t border-white/10 pt-4">
                     <DownloadStatus
-                      state={dl.state as any}
+                      state={dl.state as "downloading" | "completed" | "error" | "converting"}
                       progress={dl.progress}
                       currentTrackIndex={dl.currentTrackIndex}
                       totalTracks={dl.totalTracks}

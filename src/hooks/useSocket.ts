@@ -13,17 +13,26 @@ export interface ActiveDownload {
   destinationPath?: string;
 }
 
+export interface HistoryItem {
+  id: string;
+  title: string;
+  path: string;
+  timestamp: string;
+}
+
 export const useSocket = (serverUrl: string) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [downloads, setDownloads] = useState<ActiveDownload[]>([]);
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
 
   useEffect(() => {
     const newSocket = io(serverUrl);
     setSocket(newSocket);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     newSocket.on("syncActiveDownloads", (activeItems: any[]) => {
-       const mapped = activeItems.map(item => ({
+       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       const mapped = activeItems.map((item: any) => ({
            id: item.id,
            state: item.state || 'downloading',
            title: item.title,
