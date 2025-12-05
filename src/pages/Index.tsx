@@ -61,7 +61,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center p-4 sm:p-8 pt-36 transition-all duration-500">
+    <div className="min-h-screen flex flex-col items-center p-4 sm:p-8 pt-36 md:pt-48 transition-all duration-500">
       <div className="w-full max-w-3xl space-y-8 animate-fade-up">
         
         <Header />
