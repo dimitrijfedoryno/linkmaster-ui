@@ -56,22 +56,15 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/20 backdrop-blur-xl supports-[backdrop-filter]:bg-black/20">
-      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-          <div className="bg-gradient-to-br from-primary to-purple-600 w-8 h-8 rounded-lg flex items-center justify-center">
-            <span className="font-bold text-white">MD</span>
-          </div>
-          <span className="font-bold text-lg hidden sm:block">Media Downloader</span>
-        </Link>
+      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-center relative">
 
-        {/* Desktop Navigation */}
+        {/* Desktop Navigation - Centered */}
         <div className="hidden sm:flex items-center gap-2">
           <NavItems />
         </div>
 
-        {/* Mobile Navigation */}
-        <div className="sm:hidden">
+        {/* Mobile Navigation - Centered */}
+        <div className="sm:hidden flex justify-center w-full">
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="hover:bg-white/10">
