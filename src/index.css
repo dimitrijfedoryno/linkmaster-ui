@@ -62,8 +62,14 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    background-color: hsl(240 10% 6%);
+  }
+
   body {
     @apply bg-background text-foreground;
+    min-height: 100vh;
+    min-height: 100dvh;
     background: var(--gradient-bg);
     background-size: 400% 400%;
     animation: gradientShift 15s ease infinite;
