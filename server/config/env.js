@@ -8,4 +8,8 @@ export const DOWNLOAD_PATH_AUDIO = process.env.DOWNLOAD_PATH_AUDIO || path.join(
 export const PORT = process.env.PORT || 5000;
 export const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 export const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
-export const ALLOWED_ORIGINS = ["http://localhost:8080", "http://localhost:5173", "http://localhost:5174"];
+
+// TATO ČÁST JE NOVÁ - POVOLÍ ADRESY Z PORTAINERU
+export const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS 
+    ? process.env.ALLOWED_ORIGINS.split(',') 
+    : ["http://localhost:8080", "http://localhost:5173"];
