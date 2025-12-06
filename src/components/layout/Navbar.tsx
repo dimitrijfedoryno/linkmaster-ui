@@ -1,83 +1,44 @@
-import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, HardDrive, History, Home } from "lucide-react";
+import { HardDrive, History, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import NotificationBell from "@/components/ui/NotificationBell";
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
 
-  const NavItems = () => (
-    <>
-      <Link to="/" onClick={() => setIsOpen(false)}>
-        <Button
-          variant="ghost"
-          className={cn(
-            "w-full justify-start gap-2",
-            location.pathname === "/" && "bg-white/10"
-          )}
-        >
-          <Home className="w-4 h-4" />
-          Domů
-        </Button>
-      </Link>
-      <Link to="/history" onClick={() => setIsOpen(false)}>
-        <Button
-          variant="ghost"
-          className={cn(
-            "w-full justify-start gap-2",
-            location.pathname === "/history" && "bg-white/10"
-          )}
-        >
-          <History className="w-4 h-4" />
-          Historie
-        </Button>
-      </Link>
-      <Link to="/storage" onClick={() => setIsOpen(false)}>
-        <Button
-          variant="ghost"
-          className={cn(
-            "w-full justify-start gap-2",
-            location.pathname === "/storage" && "bg-white/10"
-          )}
-        >
-          <HardDrive className="w-4 h-4" />
-          Úložiště
-        </Button>
-      </Link>
-    </>
+  const NavItem = ({ to, icon: Icon, label }: { to: string; icon: any; label: string }) => (
+    <Link to={to}>
+      <Button
+        variant="ghost"
+        size="sm"
+        className={cn(
+          "gap-2 px-3",
+          location.pathname === to ? "bg-white/10 text-white" : "text-gray-400 hover:text-white hover:bg-white/5"
+        )}
+      >
+        <Icon className="w-4 h-4" />
+        <span className="hidden xs:inline text-sm font-medium">{label}</span>
+      </Button>
+    </Link>
   );
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/20 backdrop-blur-xl supports-[backdrop-filter]:bg-black/20">
-      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-center relative">
+      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
 
-        {/* Desktop Navigation - Centered */}
-        <div className="hidden sm:flex items-center gap-2">
-          <NavItems />
+        {/* Navigation Links - Centered/Left aligned depending on preference, but here we span them */}
+        <div className="flex items-center gap-1 sm:gap-2 mx-auto sm:mx-0">
+          <NavItem to="/" icon={Home} label="Domů" />
+          <NavItem to="/history" icon={History} label="Historie" />
+          <NavItem to="/storage" icon={HardDrive} label="Úložiště" />
         </div>
 
-        {/* Mobile Navigation - Centered */}
-        <div className="sm:hidden flex justify-center w-full">
-          <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="hover:bg-white/10">
-                <Menu className="w-5 h-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[80%] border-l-white/10 bg-black/95 backdrop-blur-xl">
-              <div className="flex flex-col gap-4 mt-8">
-                <NavItems />
-              </div>
-            </SheetContent>
-          </Sheet>
+        {/* Right Side - Notifications */}
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 sm:static sm:transform-none">
+            <NotificationBell />
         </div>
+
       </div>
     </nav>
   );

@@ -6,9 +6,33 @@ import { DOWNLOAD_PATH_AUDIO, DOWNLOAD_PATH_VIDEO } from '../config/env.js';
 
 const activeDownloads = new Map();
 let downloadHistory = [];
+let notifications = [];
 
 export const getActiveDownloads = () => Array.from(activeDownloads.values());
 export const getDownloadHistory = () => downloadHistory;
+export const getNotifications = () => notifications;
+
+export const clearNotifications = (io) => {
+    notifications = [];
+    io.emit('notificationUpdate', notifications);
+};
+
+export const deleteNotification = (id, io) => {
+    notifications = notifications.filter(n => n.id !== id);
+    io.emit('notificationUpdate', notifications);
+};
+
+const addNotification = (type, message, details, io) => {
+    const notification = {
+        id: uuidv4(),
+        type, // 'error', 'info', etc.
+        message,
+        details,
+        timestamp: new Date()
+    };
+    notifications.unshift(notification);
+    io.emit('notificationUpdate', notifications);
+};
 
 const addToHistory = (item, io) => {
     downloadHistory.unshift(item);
@@ -18,6 +42,8 @@ const addToHistory = (item, io) => {
     io.emit('historyUpdate', downloadHistory);
 };
 
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 export const startDownload = async (downloadId, tracks, format, url, playlistTitle, io) => {
     const baseDestinationPath = format === 'audio' ? DOWNLOAD_PATH_AUDIO : DOWNLOAD_PATH_VIDEO;
     // Sanitizace názvu složky
@@ -25,7 +51,6 @@ export const startDownload = async (downloadId, tracks, format, url, playlistTit
     const destinationPath = tracks.length > 1 ? path.join(baseDestinationPath, safeFolderName) : baseDestinationPath;
 
     // Ensure directory exists.
-    // NOTE: This might fail if the path is on a network drive that doesn't exist or isn't mounted.
     try {
         fs.mkdirSync(destinationPath, { recursive: true });
     } catch (err) {
@@ -35,9 +60,16 @@ export const startDownload = async (downloadId, tracks, format, url, playlistTit
         return;
     }
 
+    let failedTracks = [];
+
     try {
         for (let i = 0; i < tracks.length; i++) {
             const track = tracks[i];
+
+            // Rate limiting delay (3 seconds) if more than one track or explicitly requested
+            if (i > 0) {
+                await delay(3000);
+            }
 
             // Update state
             activeDownloads.set(downloadId, {
@@ -60,38 +92,64 @@ export const startDownload = async (downloadId, tracks, format, url, playlistTit
                 totalTracks: tracks.length
             });
 
-            await downloadTrack({ ...track, index: i+1, total: tracks.length }, format, destinationPath, (progress) => {
-                 const currentState = activeDownloads.get(downloadId);
-                 if (currentState) {
-                     currentState.progress = progress;
-                     activeDownloads.set(downloadId, currentState);
-                     io.emit('downloadProgress', {
-                        id: downloadId,
-                        progress,
-                        message: `Stahuji: ${track.title}`,
-                        currentTrackIndex: i+1,
-                        totalTracks: tracks.length,
-                        state: 'downloading'
+            let attempts = 0;
+            const maxAttempts = 3;
+            let success = false;
+
+            while (attempts < maxAttempts && !success) {
+                attempts++;
+                try {
+                    await downloadTrack({ ...track, index: i+1, total: tracks.length }, format, destinationPath, (progress) => {
+                        const currentState = activeDownloads.get(downloadId);
+                        if (currentState) {
+                            currentState.progress = progress;
+                            activeDownloads.set(downloadId, currentState);
+                            io.emit('downloadProgress', {
+                                id: downloadId,
+                                progress,
+                                message: `Stahuji: ${track.title}`,
+                                currentTrackIndex: i+1,
+                                totalTracks: tracks.length,
+                                state: 'downloading'
+                            });
+                        }
                     });
-                 }
-            });
+                    success = true;
+                } catch (err) {
+                    console.error(`Attempt ${attempts} failed for ${track.title}:`, err);
+                    if (attempts < maxAttempts) {
+                        // Exponential backoff or simple delay before retry
+                        await delay(2000 * attempts);
+                    } else {
+                        // Final failure for this track
+                        const errorMsg = `Nepodařilo se stáhnout: ${track.title}`;
+                        addNotification('error', errorMsg, err.message, io);
+                        failedTracks.push({ track: track.title, error: err.message });
+                    }
+                }
+            }
         }
 
         // Complete
         activeDownloads.delete(downloadId);
+
+        const status = failedTracks.length === 0 ? 'success' : (failedTracks.length === tracks.length ? 'failed' : 'partial');
+
         addToHistory({
             id: downloadId,
             title: playlistTitle || tracks[0].title,
             type: tracks.length > 1 ? 'playlist' : 'single',
             format,
             timestamp: new Date(),
-            status: 'success',
-            path: destinationPath
+            status: status,
+            path: destinationPath,
+            failedCount: failedTracks.length
         }, io);
 
         io.emit('downloadComplete', { id: downloadId, path: destinationPath });
 
     } catch (error) {
+        // This catch block handles catastrophic errors that crash the loop (should be rare with inner try/catch)
         activeDownloads.delete(downloadId);
         io.emit('downloadError', { id: downloadId, message: error.message });
     }

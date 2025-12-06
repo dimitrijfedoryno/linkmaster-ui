@@ -15,3 +15,5 @@ export const getApiUrl = () => {
     // This is the most common home-server setup.
     return `${window.location.protocol}//${window.location.hostname}:5000`;
 };
+
+export const API_URL = getApiUrl();
