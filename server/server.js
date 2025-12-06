@@ -4,7 +4,7 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import { PORT, ALLOWED_ORIGINS } from './config/env.js';
 import { setupRoutes } from './routes.js';
-import { getActiveDownloads, getDownloadHistory } from './services/downloadManager.js';
+import { getActiveDownloads, getDownloadHistory, getNotifications, clearNotifications, deleteNotification } from './services/downloadManager.js';
 
 // --- CONFIGURATION ---
 const app = express();
@@ -29,6 +29,15 @@ io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
     socket.emit('syncActiveDownloads', getActiveDownloads());
     socket.emit('historyUpdate', getDownloadHistory());
+    socket.emit('notificationUpdate', getNotifications());
+
+    socket.on('clearNotifications', () => {
+        clearNotifications(io);
+    });
+
+    socket.on('deleteNotification', (id) => {
+        deleteNotification(id, io);
+    });
 });
 
 // --- START SERVER ---
