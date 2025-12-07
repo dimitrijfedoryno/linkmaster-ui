@@ -60,10 +60,22 @@ export const getSpotifyPlaylistTracks = async (playlistId) => {
             const items = response.data.items;
             items.forEach(item => {
                 if (item.track) {
-                    const artist = item.track.artists.map(a => a.name).join(', ');
-                    const title = item.track.name;
+                    const t = item.track;
+                    const artist = t.artists.map(a => a.name).join(', ');
+                    const title = t.name;
+                    const albumName = t.album.name;
+                    const albumArt = t.album.images && t.album.images.length > 0 ? t.album.images[0].url : null;
+                    const releaseDate = t.album.release_date;
+                    const trackNumber = t.track_number;
+
                     tracks.push({
                         title: `${artist} - ${title}`,
+                        originalTitle: title,
+                        artist: artist,
+                        album: albumName,
+                        albumArt: albumArt,
+                        releaseDate: releaseDate,
+                        trackNumber: trackNumber,
                         url: `ytsearch1:${artist} - ${title} audio`,
                         type: 'spotify_search'
                     });
@@ -82,10 +94,22 @@ export const getSpotifyTrack = async (trackId) => {
     const response = await axios.get(`https://api.spotify.com/v1/tracks/${trackId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
     });
-    const artist = response.data.artists.map(a => a.name).join(', ');
-    const title = response.data.name;
+    const t = response.data;
+    const artist = t.artists.map(a => a.name).join(', ');
+    const title = t.name;
+    const albumName = t.album.name;
+    const albumArt = t.album.images && t.album.images.length > 0 ? t.album.images[0].url : null;
+    const releaseDate = t.album.release_date;
+    const trackNumber = t.track_number;
+
     return [{
         title: `${artist} - ${title}`,
+        originalTitle: title,
+        artist: artist,
+        album: albumName,
+        albumArt: albumArt,
+        releaseDate: releaseDate,
+        trackNumber: trackNumber,
         url: `ytsearch1:${artist} - ${title} audio`,
         type: 'spotify_search'
     }];

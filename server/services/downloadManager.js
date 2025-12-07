@@ -99,6 +99,7 @@ export const startDownload = async (downloadId, tracks, format, url, playlistTit
             while (attempts < maxAttempts && !success) {
                 attempts++;
                 try {
+                    // Pass the full track object which now includes extended metadata (album, art, etc.)
                     await downloadTrack({ ...track, index: i+1, total: tracks.length }, format, destinationPath, (progress) => {
                         const currentState = activeDownloads.get(downloadId);
                         if (currentState) {
