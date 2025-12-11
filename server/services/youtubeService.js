@@ -19,20 +19,24 @@ const downloadImage = async (url, filepath) => {
 
 export const getYtDlpMetadata = (url) => {
     return new Promise((resolve, reject) => {
-        const ytDlpProcess = spawn('yt-dlp', ['--flat-playlist', '--dump-json', '--no-warnings', url]);
+        const ytDlpProcess = spawn('yt-dlp', ['--flat-playlist', '--dump-single-json', '--no-warnings', url]);
         let output = '';
         ytDlpProcess.stdout.on('data', (d) => output += d.toString());
 
         ytDlpProcess.on('close', (code) => {
             if (code === 0) {
                 try {
-                    const data = JSON.parse(output.trim().split('\n')[0]);
-                    if (data._type === 'playlist' || data.entries) {
+                    const data = JSON.parse(output);
+                    if (data.entries || data._type === 'playlist') {
                         resolve({
                             title: data.title || 'Playlist',
                             totalTracks: data.entries ? data.entries.length : 0,
                             isPlaylist: true,
-                            tracks: data.entries ? data.entries.map(e => ({ url: e.url, title: e.title, type: 'youtube' })) : []
+                            tracks: data.entries ? data.entries.map(e => ({
+                                url: e.url || `https://www.youtube.com/watch?v=${e.id}`,
+                                title: e.title,
+                                type: 'youtube'
+                            })) : []
                         });
                     } else {
                         resolve({
@@ -42,7 +46,10 @@ export const getYtDlpMetadata = (url) => {
                             tracks: [{ url: data.webpage_url || url, title: data.title, type: 'youtube' }]
                         });
                     }
-                } catch (e) { reject(new Error("Chyba parsování metadat.")); }
+                } catch (e) {
+                    console.error("Metadata parsing error:", e);
+                    reject(new Error("Chyba parsování metadat."));
+                }
             } else { reject(new Error("yt-dlp selhalo.")); }
         });
     });
