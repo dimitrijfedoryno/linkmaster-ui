@@ -20,13 +20,25 @@ export interface HistoryItem {
   timestamp: string;
 }
 
+const getUserId = () => {
+    let userId = localStorage.getItem("app_user_id");
+    if (!userId) {
+        userId = crypto.randomUUID();
+        localStorage.setItem("app_user_id", userId);
+    }
+    return userId;
+};
+
 export const useSocket = (serverUrl: string) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [downloads, setDownloads] = useState<ActiveDownload[]>([]);
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [userId] = useState(getUserId());
 
   useEffect(() => {
-    const newSocket = io(serverUrl);
+    const newSocket = io(serverUrl, {
+        query: { userId }
+    });
     setSocket(newSocket);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -81,7 +93,7 @@ export const useSocket = (serverUrl: string) => {
     });
 
     return () => { newSocket.disconnect(); };
-  }, [serverUrl]);
+  }, [serverUrl, userId]);
 
-  return { socket, downloads, history };
+  return { socket, downloads, history, userId };
 };

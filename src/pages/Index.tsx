@@ -18,7 +18,7 @@ const Index = () => {
   const [platform, setPlatform] = useState<Platform>(null);
   
   const API_URL = getApiUrl();
-  const { downloads, history } = useSocket(API_URL);
+  const { socket, downloads, history, userId } = useSocket(API_URL);
 
   const handleDownload = async () => {
     if (!url) {
@@ -37,7 +37,8 @@ const Index = () => {
         url,
         format,
         tracks: metadata.tracks,
-        playlistTitle: metadata.title
+        playlistTitle: metadata.title,
+        userId: userId // Pass userId here
       });
 
       toast.success("Stahování zahájeno", { description: `Přidáno do fronty: ${metadata.title}` });
@@ -51,6 +52,12 @@ const Index = () => {
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  const handleCancel = (downloadId: string) => {
+      if (socket) {
+          socket.emit('cancelDownload', downloadId);
+      }
   };
 
   const handlePlatformDetect = (detectedPlatform: Platform) => {
@@ -97,6 +104,7 @@ const Index = () => {
                       mediaTitle={dl.title}
                       customMessage={dl.message}
                       destinationPath={dl.destinationPath}
+                      onCancel={() => handleCancel(dl.id)}
                     />
                  </div>
                ))}

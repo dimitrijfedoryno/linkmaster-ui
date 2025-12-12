@@ -42,8 +42,8 @@ export const setupRoutes = (app, io) => {
     });
 
     app.post('/api/download', (req, res) => {
-        const { url, format, tracks, playlistTitle } = req.body;
-        const downloadId = createDownload(url, format, tracks, playlistTitle, io);
+        const { url, format, tracks, playlistTitle, userId } = req.body;
+        const downloadId = createDownload(url, format, tracks, playlistTitle, io, userId);
         res.json({ message: 'Started', downloadId });
     });
 };
