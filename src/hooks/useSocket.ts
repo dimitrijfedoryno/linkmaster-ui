@@ -62,12 +62,19 @@ export const useSocket = (serverUrl: string) => {
 
     newSocket.on("downloadProgress", (data) => {
       setDownloads(prev => {
-        const exists = prev.find(d => d.id === data.id);
-        if (!exists) {
+        const existing = prev.find(d => d.id === data.id);
+
+        // Fix: If download is already in 'error' state (e.g. cancelled), ignore progress updates
+        // This prevents race conditions where a late progress event reverts the 'error' state
+        if (existing && existing.state === 'error') {
+            return prev;
+        }
+
+        if (!existing) {
            return [...prev, {
              id: data.id,
              state: data.state || 'downloading',
-             title: data.message.replace('Stahuji: ', '') || 'Stahování...',
+             title: data.message ? data.message.replace('Stahuji: ', '') : 'Stahování...',
              progress: data.progress,
              totalTracks: data.totalTracks,
              currentTrackIndex: data.currentTrackIndex,
@@ -86,6 +93,7 @@ export const useSocket = (serverUrl: string) => {
     });
 
     newSocket.on("downloadError", (data) => {
+       // When error (or cancellation) happens, update state to 'error' and set message
        setDownloads(prev => prev.map(d => d.id === data.id ? { ...d, state: 'error', message: data.message } : d));
        toast.error("Chyba při stahování", {
            description: data.message
