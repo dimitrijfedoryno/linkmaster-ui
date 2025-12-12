@@ -9,7 +9,20 @@ let downloadHistory = [];
 let notifications = [];
 
 export const getActiveDownloads = (userId) => {
-    return Array.from(activeDownloads.values()).filter(d => !userId || d.ownerId === userId);
+    return Array.from(activeDownloads.values())
+        .filter(d => !userId || d.ownerId === userId)
+        .map(d => ({
+            id: d.id,
+            state: d.state,
+            title: d.title,
+            progress: d.progress,
+            totalTracks: d.totalTracks,
+            currentTrackIndex: d.currentTrackIndex,
+            message: d.message,
+            destinationPath: d.destinationPath,
+            ownerId: d.ownerId
+            // Explicitly exclude 'process' to avoid serialization errors
+        }));
 };
 
 export const getDownloadHistory = (userId) => {

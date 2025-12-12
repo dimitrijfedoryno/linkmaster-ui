@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
-import { Loader2, CheckCircle2, Folder, XCircle, X } from "lucide-react";
+import { Loader2, CheckCircle2, Folder, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export type DownloadState = "idle" | "analyzing" | "preparing" | "downloading" | "complete" | "error"; 
 
@@ -56,7 +57,7 @@ const DownloadStatus = ({
 
   return (
     <div className="space-y-3 animate-fade-in relative">
-      <div className="flex items-center gap-3 pr-8">
+      <div className="flex items-center gap-3">
         {statusIcons[state]}
         <span className={cn(
           "text-sm transition-colors duration-300",
@@ -66,16 +67,6 @@ const DownloadStatus = ({
           {currentMessage}
         </span>
       </div>
-
-      {(state === "downloading" || state === "preparing") && onCancel && (
-          <button
-            onClick={onCancel}
-            className="absolute top-0 right-0 p-1 rounded-full hover:bg-white/10 transition-colors text-muted-foreground hover:text-red-500"
-            title="Zrušit stahování"
-          >
-              <X className="w-4 h-4" />
-          </button>
-      )}
 
       {(state === "downloading" || state === "analyzing" || state === "preparing") && (
         <>
@@ -94,6 +85,17 @@ const DownloadStatus = ({
                     style={{ width: `${progress}%` }}
                 />
             </div>
+
+            {onCancel && (
+                <Button
+                    variant="destructive"
+                    size="lg"
+                    className="w-full mt-2 font-bold uppercase tracking-wider bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-red-500/20 transition-all duration-300"
+                    onClick={onCancel}
+                >
+                    Zrušit stahování
+                </Button>
+            )}
         </>
       )}
 
