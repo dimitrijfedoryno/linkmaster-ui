@@ -55,7 +55,7 @@ export const getYtDlpMetadata = (url) => {
     });
 };
 
-export const downloadTrack = (track, format, destinationPath, onProgress) => {
+export const downloadTrack = (track, format, destinationPath, onProgress, onProcessStart) => {
     return new Promise(async (resolve, reject) => {
         // If it is a Spotify track with extended metadata, we handle it differently (manual ffmpeg post-processing)
         // ONLY for audio mode. Video mode doesn't really apply to Spotify tracks in this context usually.
@@ -102,6 +102,8 @@ export const downloadTrack = (track, format, destinationPath, onProgress) => {
         }
 
         const ytDlpProcess = spawn('yt-dlp', args);
+        if (onProcessStart) onProcessStart(ytDlpProcess);
+
         let lastProgress = 0;
 
         ytDlpProcess.stdout.on('data', (data) => {
@@ -126,7 +128,15 @@ export const downloadTrack = (track, format, destinationPath, onProgress) => {
         });
 
         ytDlpProcess.on('close', async (code) => {
-            if (code !== 0) {
+            // Check if killed/cancelled (signal)
+            if (ytDlpProcess.killed) {
+                // cleanup
+                if (fs.existsSync(tempAudioPath)) fs.unlinkSync(tempAudioPath);
+                if (fs.existsSync(tempCoverPath)) fs.unlinkSync(tempCoverPath);
+                return reject(new Error('Process cancelled'));
+            }
+
+            if (code !== 0 && code !== null) { // code is null if killed
                 return reject(new Error(`yt-dlp exited with code ${code}`));
             }
 
@@ -177,11 +187,16 @@ export const downloadTrack = (track, format, destinationPath, onProgress) => {
 
                 // Spawn FFmpeg
                 const ffmpeg = spawn('ffmpeg', ffmpegArgs);
+                if (onProcessStart) onProcessStart(ffmpeg);
 
                 ffmpeg.on('close', (fCode) => {
                     // Cleanup
                     if (fs.existsSync(tempAudioPath)) fs.unlinkSync(tempAudioPath);
                     if (fs.existsSync(tempCoverPath)) fs.unlinkSync(tempCoverPath);
+
+                    if (ffmpeg.killed) {
+                        return reject(new Error('Process cancelled'));
+                    }
 
                     if (fCode === 0) {
                         onProgress(100);

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Loader2, CheckCircle2, Folder, XCircle } from "lucide-react";
+import { Loader2, CheckCircle2, Folder, XCircle, X } from "lucide-react";
 
 export type DownloadState = "idle" | "analyzing" | "preparing" | "downloading" | "complete" | "error"; 
 
@@ -11,6 +11,7 @@ interface DownloadStatusProps {
   currentTrackIndex?: number;
   totalTracks?: number;
   mediaTitle?: string;
+  onCancel?: () => void;
 }
 
 const DownloadStatus = ({ 
@@ -21,6 +22,7 @@ const DownloadStatus = ({
     currentTrackIndex = 0,
     totalTracks = 0,
     mediaTitle,
+    onCancel,
 }: DownloadStatusProps) => {
   
   const getDynamicMessage = (currentState: DownloadState): string => {
@@ -53,8 +55,8 @@ const DownloadStatus = ({
   const currentMessage = getDynamicMessage(state);
 
   return (
-    <div className="space-y-3 animate-fade-in">
-      <div className="flex items-center gap-3">
+    <div className="space-y-3 animate-fade-in relative">
+      <div className="flex items-center gap-3 pr-8">
         {statusIcons[state]}
         <span className={cn(
           "text-sm transition-colors duration-300",
@@ -64,6 +66,16 @@ const DownloadStatus = ({
           {currentMessage}
         </span>
       </div>
+
+      {(state === "downloading" || state === "preparing") && onCancel && (
+          <button
+            onClick={onCancel}
+            className="absolute top-0 right-0 p-1 rounded-full hover:bg-white/10 transition-colors text-muted-foreground hover:text-red-500"
+            title="Zrušit stahování"
+          >
+              <X className="w-4 h-4" />
+          </button>
+      )}
 
       {(state === "downloading" || state === "analyzing" || state === "preparing") && (
         <>
