@@ -173,14 +173,17 @@ export const startDownload = async (downloadId, tracks, format, url, playlistTit
                 currentTrackIndex: i+1
             });
 
-            io.to(`user:${ownerId}`).emit('downloadProgress', {
-                id: downloadId,
-                state: 'downloading',
-                progress: 0,
-                message: `Zpracovávám: ${track.title}`,
-                currentTrackIndex: i+1,
-                totalTracks: tracks.length
-            });
+            // Prevent emission if cancelled
+            if (!activeDownloads.get(downloadId)?.cancelled) {
+                io.to(`user:${ownerId}`).emit('downloadProgress', {
+                    id: downloadId,
+                    state: 'downloading',
+                    progress: 0,
+                    message: `Zpracovávám: ${track.title}`,
+                    currentTrackIndex: i+1,
+                    totalTracks: tracks.length
+                });
+            }
 
             let attempts = 0;
             const maxAttempts = 3;
@@ -202,7 +205,8 @@ export const startDownload = async (downloadId, tracks, format, url, playlistTit
                         destinationPath,
                         (progress) => {
                             const currentState = activeDownloads.get(downloadId);
-                            if (currentState) {
+                            // IMPORTANT: Check cancellation before emitting progress
+                            if (currentState && !currentState.cancelled) {
                                 currentState.progress = progress;
                                 activeDownloads.set(downloadId, currentState);
                                 io.to(`user:${ownerId}`).emit('downloadProgress', {
