@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { io, Socket } from "socket.io-client";
 import { toast } from "sonner";
+import { v4 as uuidv4 } from 'uuid';
 
 export interface ActiveDownload {
   id: string;
@@ -23,7 +24,7 @@ export interface HistoryItem {
 const getUserId = () => {
     let userId = localStorage.getItem("app_user_id");
     if (!userId) {
-        userId = crypto.randomUUID();
+        userId = uuidv4();
         localStorage.setItem("app_user_id", userId);
     }
     return userId;
