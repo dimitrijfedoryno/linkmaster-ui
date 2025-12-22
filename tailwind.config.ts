@@ -53,6 +53,7 @@ export default {
         },
         youtube: "hsl(var(--youtube))",
         spotify: "hsl(var(--spotify))",
+        soundcloud: "hsl(var(--soundcloud))",
         tiktok: "hsl(var(--tiktok))",
         instagram: "hsl(var(--instagram))",
       },

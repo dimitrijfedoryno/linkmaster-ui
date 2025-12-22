@@ -27,6 +27,10 @@ export const getYtDlpMetadata = (url) => {
             if (code === 0) {
                 try {
                     const data = JSON.parse(output);
+                    // Simple detection for SoundCloud
+                    const isSoundCloud = url.includes("soundcloud.com");
+                    const type = isSoundCloud ? 'soundcloud' : 'youtube';
+
                     if (data.entries || data._type === 'playlist') {
                         resolve({
                             title: data.title || 'Playlist',
@@ -35,7 +39,7 @@ export const getYtDlpMetadata = (url) => {
                             tracks: data.entries ? data.entries.map(e => ({
                                 url: e.url || `https://www.youtube.com/watch?v=${e.id}`,
                                 title: e.title,
-                                type: 'youtube'
+                                type: type
                             })) : []
                         });
                     } else {
@@ -43,7 +47,7 @@ export const getYtDlpMetadata = (url) => {
                             title: data.title,
                             totalTracks: 1,
                             isPlaylist: false,
-                            tracks: [{ url: data.webpage_url || url, title: data.title, type: 'youtube' }]
+                            tracks: [{ url: data.webpage_url || url, title: data.title, type: type }]
                         });
                     }
                 } catch (e) {
@@ -60,6 +64,7 @@ export const downloadTrack = (track, format, destinationPath, onProgress, onProc
         // If it is a Spotify track with extended metadata, we handle it differently (manual ffmpeg post-processing)
         // ONLY for audio mode. Video mode doesn't really apply to Spotify tracks in this context usually.
         const isSpotifyEnhanced = track.type === 'spotify_search' && track.artist && format === 'audio';
+        const isSoundCloud = track.type === 'soundcloud';
 
         // Sanitize filename: Replace illegal characters
         const safeTitle = (track.title || 'Unknown').replace(/[<>:"/\\|?*]/g, '');
@@ -89,8 +94,15 @@ export const downloadTrack = (track, format, destinationPath, onProgress, onProc
             args.push('-o', outputTemplate);
             args.push('-x', '--audio-format', 'mp3', '--audio-quality', '0');
             // We do NOT add --embed-thumbnail or --add-metadata here, because we do it manually.
+        } else if (isSoundCloud) {
+            // SoundCloud behavior: Force Artist - Title
+            outputTemplate = path.join(destinationPath, '%(uploader)s - %(title)s.%(ext)s');
+            args.push('-o', outputTemplate);
+            args.push('--embed-thumbnail', '--add-metadata');
+            // Force MP3 high quality
+            args.push('-x', '--audio-format', 'mp3', '--audio-quality', '0');
         } else {
-            // Standard behavior
+            // Standard behavior (YouTube etc)
             outputTemplate = path.join(destinationPath, '%(title)s.%(ext)s');
             args.push('-o', outputTemplate);
             args.push('--embed-thumbnail', '--add-metadata');
