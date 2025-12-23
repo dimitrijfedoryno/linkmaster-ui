@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react"; 
 import { cn } from "@/lib/utils";
 
-type Platform = "youtube" | "spotify" | "tiktok" | "instagram" | null;
+type Platform = "youtube" | "spotify" | "soundcloud" | "tiktok" | "instagram" | null;
 
 interface DownloadInputProps {
   value: string;
@@ -30,6 +30,9 @@ const DownloadInput = ({ value, onChange, onPlatformDetect, onDownloadClick, isL
       // OPRAVA: Správná detekce Spotify
       if (lowerUrl.includes("spotify.com")) {
         return "spotify";
+      }
+      if (lowerUrl.includes("soundcloud.com") || lowerUrl.includes("on.soundcloud.com")) {
+        return "soundcloud";
       }
       if (lowerUrl.includes("tiktok.com")) {
         return "tiktok";
@@ -56,7 +59,7 @@ const DownloadInput = ({ value, onChange, onPlatformDetect, onDownloadClick, isL
           )}
           <Input
             type="url"
-            placeholder="Vložte odkaz (YouTube, Spotify, TikTok, Instagram)..."
+            placeholder="Vložte odkaz (YouTube, Spotify, SoundCloud...)"
             value={value}
             onChange={(e) => onChange(e.target.value)}
             className={cn(
