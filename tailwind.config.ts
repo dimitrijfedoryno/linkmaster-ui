@@ -56,6 +56,8 @@ export default {
         soundcloud: "hsl(var(--soundcloud))",
         tiktok: "hsl(var(--tiktok))",
         instagram: "hsl(var(--instagram))",
+        twitch: "hsl(var(--twitch))",
+        kick: "hsl(var(--kick))",
       },
       borderRadius: {
         lg: "var(--radius)",

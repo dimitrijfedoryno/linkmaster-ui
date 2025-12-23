@@ -125,7 +125,17 @@ export const cancelDownload = (downloadId, userId, io) => {
 };
 
 export const startDownload = async (downloadId, tracks, format, url, playlistTitle, io, ownerId) => {
-    const baseDestinationPath = format === 'audio' ? DOWNLOAD_PATH_AUDIO : DOWNLOAD_PATH_VIDEO;
+    let baseDestinationPath = format === 'audio' ? DOWNLOAD_PATH_AUDIO : DOWNLOAD_PATH_VIDEO;
+
+    // Platform specific subfolders
+    if (tracks.length > 0) {
+        if (tracks[0].type === 'twitch') {
+            baseDestinationPath = path.join(baseDestinationPath, 'Twitch');
+        } else if (tracks[0].type === 'kick') {
+            baseDestinationPath = path.join(baseDestinationPath, 'Kick');
+        }
+    }
+
     // Sanitizace názvu složky
     const safeFolderName = (playlistTitle || 'Download').replace(/[<>:"/\\|?*]/g, '').trim();
     const destinationPath = tracks.length > 1 ? path.join(baseDestinationPath, safeFolderName) : baseDestinationPath;
