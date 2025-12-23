@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react"; 
 import { cn } from "@/lib/utils";
 
-type Platform = "youtube" | "spotify" | "soundcloud" | "tiktok" | "instagram" | null;
+type Platform = "youtube" | "spotify" | "soundcloud" | "tiktok" | "instagram" | "twitch" | "kick" | null;
 
 interface DownloadInputProps {
   value: string;
@@ -39,6 +39,12 @@ const DownloadInput = ({ value, onChange, onPlatformDetect, onDownloadClick, isL
       }
       if (lowerUrl.includes("instagram.com")) {
         return "instagram";
+      }
+      if (lowerUrl.includes("twitch.tv")) {
+        return "twitch";
+      }
+      if (lowerUrl.includes("kick.com")) {
+        return "kick";
       }
       
       return null;

@@ -27,9 +27,15 @@ export const getYtDlpMetadata = (url) => {
             if (code === 0) {
                 try {
                     const data = JSON.parse(output);
-                    // Simple detection for SoundCloud
+                    // Simple detection for platforms
                     const isSoundCloud = url.includes("soundcloud.com");
-                    const type = isSoundCloud ? 'soundcloud' : 'youtube';
+                    const isTwitch = url.includes("twitch.tv");
+                    const isKick = url.includes("kick.com");
+
+                    let type = 'youtube';
+                    if (isSoundCloud) type = 'soundcloud';
+                    else if (isTwitch) type = 'twitch';
+                    else if (isKick) type = 'kick';
 
                     if (data.entries || data._type === 'playlist') {
                         resolve({
@@ -65,6 +71,8 @@ export const downloadTrack = (track, format, destinationPath, onProgress, onProc
         // ONLY for audio mode. Video mode doesn't really apply to Spotify tracks in this context usually.
         const isSpotifyEnhanced = track.type === 'spotify_search' && track.artist && format === 'audio';
         const isSoundCloud = track.type === 'soundcloud';
+        const isTwitch = track.type === 'twitch';
+        const isKick = track.type === 'kick';
 
         // Sanitize filename: Replace illegal characters
         const safeTitle = (track.title || 'Unknown').replace(/[<>:"/\\|?*]/g, '');
@@ -101,6 +109,22 @@ export const downloadTrack = (track, format, destinationPath, onProgress, onProc
             args.push('--embed-thumbnail', '--add-metadata');
             // Force MP3 high quality
             args.push('-x', '--audio-format', 'mp3', '--audio-quality', '0');
+        } else if (isTwitch || isKick) {
+            // Twitch/Kick behavior: Streamer - Title
+            outputTemplate = path.join(destinationPath, '%(uploader)s - %(title)s.%(ext)s');
+            args.push('-o', outputTemplate);
+            // No chat logs (default in yt-dlp usually, but ensuring no --write-sub or --write-auto-sub)
+            // yt-dlp doesn't download chat by default unless requested for some extractors, but Twitch chat is a subtitle format often.
+            // We explicitely avoid adding --write-subs.
+
+            if (format === 'audio') {
+                 args.push('-x', '--audio-format', 'mp3', '--audio-quality', '0', '--postprocessor-args', 'ffmpeg:-id3v2_version 3');
+                 args.push('--embed-thumbnail', '--add-metadata');
+            } else {
+                 // Video
+                 args.push('-f', 'bestvideo+bestaudio/best');
+                 args.push('--embed-thumbnail', '--add-metadata');
+            }
         } else {
             // Standard behavior (YouTube etc)
             outputTemplate = path.join(destinationPath, '%(title)s.%(ext)s');
