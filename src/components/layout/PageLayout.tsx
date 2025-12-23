@@ -1,4 +1,4 @@
-import { Youtube, Music2, Share2, Instagram } from "lucide-react";
+import PlatformLogo from "@/components/PlatformLogo";
 
 export const Header = () => (
   <div className="text-center space-y-2 mb-12">
@@ -6,28 +6,28 @@ export const Header = () => (
       Media Downloader
     </h1>
     <p className="text-muted-foreground text-lg sm:text-xl">
-      Stahujte obsah z YouTube, Spotify, TikTok a Instagramu přímo do vašeho NAS
+      Stahujte obsah z YouTube, Spotify, TikTok, Instagramu, SoundCloud, Twitch a Kick přímo do vašeho NAS
     </p>
   </div>
 );
 
+const platforms = [
+  { id: "youtube", label: "YouTube" },
+  { id: "spotify", label: "Spotify" },
+  { id: "tiktok", label: "TikTok" },
+  { id: "instagram", label: "Instagram" },
+  { id: "soundcloud", label: "SoundCloud" },
+  { id: "twitch", label: "Twitch" },
+  { id: "kick", label: "Kick" },
+] as const;
+
 export const Footer = () => (
-  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8 opacity-60">
-    <div className="flex flex-col items-center gap-2">
-      <Youtube className="w-8 h-8 text-red-500" />
-      <span className="text-xs font-medium text-muted-foreground">YouTube</span>
-    </div>
-    <div className="flex flex-col items-center gap-2">
-      <Music2 className="w-8 h-8 text-green-500" />
-      <span className="text-xs font-medium text-muted-foreground">Spotify</span>
-    </div>
-    <div className="flex flex-col items-center gap-2">
-      <Share2 className="w-8 h-8 text-pink-500" />
-      <span className="text-xs font-medium text-muted-foreground">TikTok</span>
-    </div>
-    <div className="flex flex-col items-center gap-2">
-      <Instagram className="w-8 h-8 text-purple-500" />
-      <span className="text-xs font-medium text-muted-foreground">Instagram</span>
-    </div>
+  <div className="flex flex-wrap justify-center gap-6 pt-8 opacity-60 max-w-4xl mx-auto">
+    {platforms.map((p) => (
+      <div key={p.id} className="flex flex-col items-center gap-2 min-w-[80px]">
+        <PlatformLogo platform={p.id} className="w-8 h-8" />
+        <span className="text-xs font-medium text-muted-foreground">{p.label}</span>
+      </div>
+    ))}
   </div>
 );
