@@ -108,7 +108,7 @@ export const downloadTrack = (track, format, destinationPath, onProgress, onProc
             args.push('-o', outputTemplate);
             args.push('--embed-thumbnail', '--add-metadata');
             // Force MP3 high quality
-            args.push('-x', '--audio-format', 'mp3', '--audio-quality', '0');
+            args.push('-x', '--audio-format', 'mp3', '--audio-quality', '0', '--postprocessor-args', 'ffmpeg:-id3v2_version 3');
         } else if (isTwitch || isKick) {
             // Twitch/Kick behavior: Streamer - Title
             outputTemplate = path.join(destinationPath, '%(uploader)s - %(title)s.%(ext)s');
